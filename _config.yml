@@ -7,6 +7,6 @@ url: "http://panferov.me" # the base hostname & protocol for your site
 github_username:  s-panferov
 
 # Build settings
-markdown: redcarpet2
+markdown: redcarpet
 redcarpet:
   extensions: ["fenced_code_blocks"]

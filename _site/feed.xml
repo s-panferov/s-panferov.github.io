@@ -1,0 +1,1330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Stanislav Panferov</title>
+    <description>Personal web blog about software development and code design.
+</description>
+    <link>http://panferov.me/</link>
+    <atom:link href="http://panferov.me/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Wed, 24 Sep 2014 08:59:56 +0400</pubDate>
+    <lastBuildDate>Wed, 24 Sep 2014 08:59:56 +0400</lastBuildDate>
+    <generator>Jekyll v2.3.0</generator>
+    
+      <item>
+        <title>Реактивный UI с использованием виртуальных деревьев</title>
+        <description>&lt;h2 id=&quot;section&quot;&gt;О материале&lt;/h2&gt;
+
+&lt;p&gt;Я решил написать серию статей на тему “Реактивный UI с использованием виртуальных деревьев” и собрать в ней общую теорию и практику данного подхода к проектированию интерактивных приложений.&lt;/p&gt;
+
+&lt;p&gt;В первой статье цикла я хотел бы рассмотреть общую теорию и эволюцию подходов к обеспечению “рекативности” — реакции приложения на действия пользователей и изменение данных. &lt;/p&gt;
+
+&lt;p&gt;Основная речь пойдет про веб и язык программирования JavaScript. Мы посмотрим на то, как обеспечивает реактивность Backbone, Angular, EmberJS и ReactJS. В следующих статьях я постараюсь более полно раскрыть теорию и практику разработки реактивных UI. Итак, поехали!&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;Эволюция походов проектирования приложений&lt;/h2&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;Простой подход&lt;/h3&gt;
+
+&lt;p&gt;Простым подходом можно назвать ситуацию, когда разработчик пытается решить все задачи руками без какой-либо магии. В мире JavaScript простой подход к проектированию UI можно рассмотреть на примере библиотеки Backbone:&lt;/p&gt;
+
+&lt;p&gt;(Пример взят из TodoMVC на Backbone: http://todomvc.com/architecture-examples/backbone/)&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;app.AppView = Backbone.View.extend({
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;render&lt;/span&gt;: &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; () {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; completed = app.todos.completed().length;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; remaining = app.todos.remaining().length;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;if&lt;/span&gt; (app.todos.length) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.&lt;span style=&quot;color:#369;font-weight:bold&quot;&gt;$main&lt;/span&gt;.show();
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.&lt;span style=&quot;color:#369;font-weight:bold&quot;&gt;$footer&lt;/span&gt;.show();
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n9&quot; name=&quot;n9&quot;&gt;9&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n10&quot; name=&quot;n10&quot;&gt;10&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;            &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.&lt;span style=&quot;color:#369;font-weight:bold&quot;&gt;$footer&lt;/span&gt;.html(&lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.statsTemplate({
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n11&quot; name=&quot;n11&quot;&gt;11&lt;/a&gt;&lt;/span&gt;                &lt;span style=&quot;color:#606&quot;&gt;completed&lt;/span&gt;: completed,
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n12&quot; name=&quot;n12&quot;&gt;12&lt;/a&gt;&lt;/span&gt;                &lt;span style=&quot;color:#606&quot;&gt;remaining&lt;/span&gt;: remaining
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n13&quot; name=&quot;n13&quot;&gt;13&lt;/a&gt;&lt;/span&gt;            }));
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n14&quot; name=&quot;n14&quot;&gt;14&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n15&quot; name=&quot;n15&quot;&gt;15&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.&lt;span style=&quot;color:#369;font-weight:bold&quot;&gt;$&lt;/span&gt;(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;#filters li a&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;)
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n16&quot; name=&quot;n16&quot;&gt;16&lt;/a&gt;&lt;/span&gt;            .removeClass(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;selected&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;)
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n17&quot; name=&quot;n17&quot;&gt;17&lt;/a&gt;&lt;/span&gt;            .filter(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;[href=&amp;quot;#/&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt; + (app.TodoFilter || &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;) + &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;&amp;quot;]&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;)
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n18&quot; name=&quot;n18&quot;&gt;18&lt;/a&gt;&lt;/span&gt;            .addClass(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;selected&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n19&quot; name=&quot;n19&quot;&gt;19&lt;/a&gt;&lt;/span&gt;        } &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;else&lt;/span&gt; {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n20&quot; name=&quot;n20&quot;&gt;20&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;            &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.&lt;span style=&quot;color:#369;font-weight:bold&quot;&gt;$main&lt;/span&gt;.hide();
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n21&quot; name=&quot;n21&quot;&gt;21&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.&lt;span style=&quot;color:#369;font-weight:bold&quot;&gt;$footer&lt;/span&gt;.hide();
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n22&quot; name=&quot;n22&quot;&gt;22&lt;/a&gt;&lt;/span&gt;        }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n23&quot; name=&quot;n23&quot;&gt;23&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n24&quot; name=&quot;n24&quot;&gt;24&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.allCheckbox.checked = !remaining;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n25&quot; name=&quot;n25&quot;&gt;25&lt;/a&gt;&lt;/span&gt;    },
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n26&quot; name=&quot;n26&quot;&gt;26&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n27&quot; name=&quot;n27&quot;&gt;27&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// Add a single todo item to the list by creating a view for it, and&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n28&quot; name=&quot;n28&quot;&gt;28&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// appending its element to the `&amp;lt;ul&amp;gt;`.&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n29&quot; name=&quot;n29&quot;&gt;29&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;addOne&lt;/span&gt;: &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (todo) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n30&quot; name=&quot;n30&quot;&gt;30&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; view = &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;new&lt;/span&gt; app.TodoView({ &lt;span style=&quot;color:#606&quot;&gt;model&lt;/span&gt;: todo });
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n31&quot; name=&quot;n31&quot;&gt;31&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.&lt;span style=&quot;color:#369;font-weight:bold&quot;&gt;$list&lt;/span&gt;.append(view.render().el);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n32&quot; name=&quot;n32&quot;&gt;32&lt;/a&gt;&lt;/span&gt;    },
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n33&quot; name=&quot;n33&quot;&gt;33&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n34&quot; name=&quot;n34&quot;&gt;34&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// Add all items in the **Todos** collection at once.&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n35&quot; name=&quot;n35&quot;&gt;35&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;addAll&lt;/span&gt;: &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; () {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n36&quot; name=&quot;n36&quot;&gt;36&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.&lt;span style=&quot;color:#369;font-weight:bold&quot;&gt;$list&lt;/span&gt;.html(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n37&quot; name=&quot;n37&quot;&gt;37&lt;/a&gt;&lt;/span&gt;        app.todos.each(&lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.addOne, &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n38&quot; name=&quot;n38&quot;&gt;38&lt;/a&gt;&lt;/span&gt;    },
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n39&quot; name=&quot;n39&quot;&gt;39&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n40&quot; name=&quot;n40&quot;&gt;40&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;    &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;filterOne&lt;/span&gt;: &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (todo) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n41&quot; name=&quot;n41&quot;&gt;41&lt;/a&gt;&lt;/span&gt;        todo.trigger(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;visible&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n42&quot; name=&quot;n42&quot;&gt;42&lt;/a&gt;&lt;/span&gt;    },
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n43&quot; name=&quot;n43&quot;&gt;43&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n44&quot; name=&quot;n44&quot;&gt;44&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;filterAll&lt;/span&gt;: &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; () {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n45&quot; name=&quot;n45&quot;&gt;45&lt;/a&gt;&lt;/span&gt;        app.todos.each(&lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.filterOne, &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n46&quot; name=&quot;n46&quot;&gt;46&lt;/a&gt;&lt;/span&gt;    }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n47&quot; name=&quot;n47&quot;&gt;47&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;На что следует обратить внимание?&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Явные манипуляции с элементами DOM. Прямая установка свойств.&lt;/li&gt;
+  &lt;li&gt;Наличие методов &lt;code&gt;addOne&lt;/code&gt; и &lt;code&gt;addAll&lt;/code&gt;. Данные методы используются для реагирования UI на изменение данных.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;section-3&quot;&gt;Достоинства&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Полное управление ситуацией. Можно делать что угодно и когда угодно. Прямые манипуляции с деревом дают полную свободу действий.&lt;/li&gt;
+  &lt;li&gt;Скорость работы. Программист вручную прописывает все манипуляции с деревом и может контролировать и корректировать определенные нюансы производительности.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;section-4&quot;&gt;Недостатки&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Все манипуляции с деревом необходимо описывать вручную. Для каждого из способов изменения данных требуется писать код, отражающий это изменение на визуальное дерево.&lt;/li&gt;
+  &lt;li&gt;Больше кода порождает больше ошибок. Разработчики в простой модели должны быть очень бдительными.&lt;/li&gt;
+  &lt;li&gt;Состояние приложения невозможно восстановить на любой произвольный момент.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;data-binding&quot;&gt;Подход с использованием технологий data-binding&lt;/h3&gt;
+
+&lt;p&gt;Data-binding - технология автоматической синхронизации данных между моделью данных и визуальным деревом. Обычно в такой архитектуре данные рассматриваются как единственный источник “правды” для приложения. Что скрывается за этой фразой?&lt;/p&gt;
+
+&lt;p&gt;За этой фразой скрывается целый пласт технологий, который позволяют разработчику указать шаблоны для UI и правила биндинга данных — а фреймворк сам творит свою магию и обновляет UI при изменении данных. &lt;/p&gt;
+
+&lt;p&gt;Data-binding подход разделяется на два больших направления. Если подходить к вопросу поверхностно, то можно сказать, что различаются они вот так:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Plain Object архитектура. В такой архитектуре модель данных представляется набором примитивных объектов языка (например, POJO — Plain Old JavaScript Object, как любят говорить авторы фреймворков).&lt;/li&gt;
+  &lt;li&gt;Архитектура на толстых моделях.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;data-binding---&quot;&gt;Data-binding на простых объектах&lt;/h4&gt;
+
+&lt;p&gt;В данной архитектуре модели данных — примитивные объекты и их можно модифицировать, удалять и всячески над ними издеваться. Как же в такой неразберихе приложению узнать о том, какие данные поменялись и как?&lt;/p&gt;
+
+&lt;p&gt;Ответ очень прост, мы будет &lt;strong&gt;наблюдать&lt;/strong&gt;. Для простоты объяснения предположим, что у нас есть глобальный объект с нашими данными о некоем человеке — &lt;code&gt;User&lt;/code&gt;. Мы хотим извернуться и вывести на экран имя и фамилию этого человека, и при этом менять наше визуальное представление вместе с изменением данных.&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;body&amp;gt;&lt;/span&gt;{{ User ? User.first_name + User.last_name : &#39;Unknown person&#39; }}&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;В этом вымышленном куске кода я пользуюсь символами &lt;code&gt;{{ .. }}&lt;/code&gt; для объявления “блока магии”, который будет обслуживаться фреймворком. Итак, что нужно сделать для того, чтобы эта магия заработала?&lt;/p&gt;
+
+&lt;p&gt;Для работы этой магии мы должны периодически вычислять значение выражения, стоящего внутри &lt;code&gt;{{ ... }}&lt;/code&gt; и менять визуальное дерево в том случае, когда результат выражения изменился. Вот так вот просто!&lt;/p&gt;
+
+&lt;p&gt;В простейшем случае это можно делать по таймеру, например, раз в одну секунду вычислять все такие блоки и обновлять визуальное дерево. На практике, конечно, механизм проверки таких блоков действует несколько умнее, но это сильно зависит от реализации конкретного фреймворка.&lt;/p&gt;
+
+&lt;p&gt;В качестве подопытного в этой категории мы рассмотрим веб-фреймворк AngularJS. Заглянем в его TodoMVC (https://github.com/tastejs/todomvc/blob/gh-pages/architecture-examples/angularjs/index.html):&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;section&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;id&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;todoapp&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-controller&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;TodoCtrl&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;header&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;id&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;header&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;h1&amp;gt;&lt;/span&gt;todos&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/h1&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;form&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;id&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;todo-form&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-submit&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;addTodo()&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;id&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;new-todo&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;placeholder&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;What needs to be done?&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-model&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;newTodo&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;autofocus&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/form&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/header&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;section&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;id&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;main&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-show&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;todos.length&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-cloak&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n9&quot; name=&quot;n9&quot;&gt;9&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;id&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;toggle-all&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;type&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;checkbox&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-model&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;allChecked&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-click&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;markAll(allChecked)&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n10&quot; name=&quot;n10&quot;&gt;10&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;        &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;label&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;for&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;toggle-all&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;Mark all as complete&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/label&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n11&quot; name=&quot;n11&quot;&gt;11&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;ul&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;id&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;todo-list&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n12&quot; name=&quot;n12&quot;&gt;12&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;li&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-repeat&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;todo in todos | filter:statusFilter track by $index&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-class&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;{completed: todo.completed, editing: todo == editedTodo}&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n13&quot; name=&quot;n13&quot;&gt;13&lt;/a&gt;&lt;/span&gt;                &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;class&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;view&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n14&quot; name=&quot;n14&quot;&gt;14&lt;/a&gt;&lt;/span&gt;                    &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;class&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;toggle&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;type&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;checkbox&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-model&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;todo.completed&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n15&quot; name=&quot;n15&quot;&gt;15&lt;/a&gt;&lt;/span&gt;                    &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;label&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-dblclick&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;editTodo(todo)&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;{{todo.title}}&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/label&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n16&quot; name=&quot;n16&quot;&gt;16&lt;/a&gt;&lt;/span&gt;                    &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;button&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;class&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;destroy&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-click&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;removeTodo(todo)&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/button&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n17&quot; name=&quot;n17&quot;&gt;17&lt;/a&gt;&lt;/span&gt;                &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n18&quot; name=&quot;n18&quot;&gt;18&lt;/a&gt;&lt;/span&gt;                &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;form&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-submit&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;doneEditing(todo)&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n19&quot; name=&quot;n19&quot;&gt;19&lt;/a&gt;&lt;/span&gt;                    &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;class&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;edit&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-trim&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;false&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-model&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;todo.title&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;todo-escape&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;revertEditing(todo)&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-blur&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;doneEditing(todo)&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;todo-focus&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;todo == editedTodo&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n20&quot; name=&quot;n20&quot;&gt;20&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;                &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/form&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n21&quot; name=&quot;n21&quot;&gt;21&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n22&quot; name=&quot;n22&quot;&gt;22&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/ul&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n23&quot; name=&quot;n23&quot;&gt;23&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/section&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n24&quot; name=&quot;n24&quot;&gt;24&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;footer&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;id&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;footer&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-show&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;todos.length&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-cloak&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n25&quot; name=&quot;n25&quot;&gt;25&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;span&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;id&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;todo-count&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;strong&amp;gt;&lt;/span&gt;{{remainingCount}}&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/strong&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n26&quot; name=&quot;n26&quot;&gt;26&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;ng-pluralize&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;count&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;remainingCount&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;when&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;{ one: &#39;item left&#39;, other: &#39;items left&#39; }&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/ng-pluralize&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n27&quot; name=&quot;n27&quot;&gt;27&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/span&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n28&quot; name=&quot;n28&quot;&gt;28&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;ul&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;id&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;filters&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n29&quot; name=&quot;n29&quot;&gt;29&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;li&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n30&quot; name=&quot;n30&quot;&gt;30&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;                &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;a&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-class&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;{selected: status == &#39;&#39;} &lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;href&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;#/&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;All&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/a&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n31&quot; name=&quot;n31&quot;&gt;31&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n32&quot; name=&quot;n32&quot;&gt;32&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;li&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n33&quot; name=&quot;n33&quot;&gt;33&lt;/a&gt;&lt;/span&gt;                &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;a&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-class&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;{selected: status == &#39;active&#39;}&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;href&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;#/active&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;Active&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/a&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n34&quot; name=&quot;n34&quot;&gt;34&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n35&quot; name=&quot;n35&quot;&gt;35&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;li&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n36&quot; name=&quot;n36&quot;&gt;36&lt;/a&gt;&lt;/span&gt;                &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;a&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-class&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;{selected: status == &#39;completed&#39;}&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;href&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;#/completed&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;Completed&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/a&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n37&quot; name=&quot;n37&quot;&gt;37&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n38&quot; name=&quot;n38&quot;&gt;38&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/ul&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n39&quot; name=&quot;n39&quot;&gt;39&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;button&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;id&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;clear-completed&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-click&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;clearCompletedTodos()&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-show&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;completedCount&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;Clear completed ({{completedCount}})&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/button&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n40&quot; name=&quot;n40&quot;&gt;40&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;    &lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/footer&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n41&quot; name=&quot;n41&quot;&gt;41&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/section&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Как можно видеть из примера, вся архитектура Angular построена на тех самых наблюдениях. Посмотрите подробнее на этот чудесный код:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;li&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-repeat&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;todo in todos | filter:statusFilter track by $index&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#b48&quot;&gt;ng-class&lt;/span&gt;=&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;{completed: todo.completed, editing: todo == editedTodo}&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    ...
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#070;font-weight:bold&quot;&gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Директива &lt;code&gt;ng-repeat&lt;/code&gt; — отличный образец наблюдательной магии Angular. Она вычисляет выражение, записанное в значении атрибута и для каждого элемента из полученного массива объектов создает визуальный элемент исходя из внутреннего шаблона. &lt;/p&gt;
+
+&lt;p&gt;Директива &lt;code&gt;ng-class&lt;/code&gt; также позволяет наблюдать за выражением, указанным в атрибуте и менять классы на элементе визуального дерева в зависимости от результата вычисления. Потрясающе!&lt;/p&gt;
+
+&lt;h5 id=&quot;section-5&quot;&gt;Достоинства&lt;/h5&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Модель данных — источник правды. Это позволяет значительно уменьшить сложность построения приложения за счет того, что разработчику не требуется описывать большую часть логики применения изменений данных к визуальному дереву. &lt;/li&gt;
+  &lt;li&gt;Декларативный UI. Пишем меньше кода — делаем меньше ошибок. &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;section-6&quot;&gt;Недостатки&lt;/h5&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Для работы технологии в коде фреймворка или приложения требуется разработка способов реагирования на изменение данных (вспомним &lt;code&gt;ng-class&lt;/code&gt;). Для каждого из возможных способов взаимодействия требуется реализация своего функционального блока. В Angular такие штуки называются &lt;em&gt;директивами&lt;/em&gt;.&lt;/li&gt;
+  &lt;li&gt;Производительность модели начинает проседать, когда под наблюдением оказывается большое число выражений, ведь нам нужно вычислять новые значения для всех них каждый раз!&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;data-binding----1&quot;&gt;Data-binding на толстых моделях&lt;/h4&gt;
+
+&lt;p&gt;Альтернативой POJO в мире современных визуальных фреймворков является биндинг на толстых моделях.&lt;/p&gt;
+
+&lt;p&gt;Толстой моделью я называю объект, который может оповещать наблюдателей о собственных изменениях (вспоминаем http://en.wikipedia.org/wiki/Observer_pattern).&lt;/p&gt;
+
+&lt;p&gt;В простейшем случае в качестве толстой модели можно рассмотреть объект, имеющий два метода: &lt;code&gt;get&lt;/code&gt; и &lt;code&gt;set&lt;/code&gt;, которые позволяют нам задавать и получать поля объекта. Рассмотрим пример из документации Ember:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;App.Person = Ember.Object.extend({
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;  &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;helloWorld&lt;/span&gt;: &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt;() {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;    alert(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Hi, my name is &lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; + &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.get(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;fullName&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;));
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;  }
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;});
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; tom = App.Person.create({
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;  &lt;span style=&quot;color:#606&quot;&gt;fullName&lt;/span&gt;: &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Tom Dale&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n9&quot; name=&quot;n9&quot;&gt;9&lt;/a&gt;&lt;/span&gt;});
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n10&quot; name=&quot;n10&quot;&gt;10&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n11&quot; name=&quot;n11&quot;&gt;11&lt;/a&gt;&lt;/span&gt;tom.helloWorld(); &lt;span style=&quot;color:#777&quot;&gt;// alerts &amp;quot;Hi my name is Tom Dale&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Объект с таким сложным API уже никак не назовешь POJO, но у него есть одно замечательное свойство — он может оповещать слушателей об изменении себя любимого, когда кто-то вызывает метод &lt;code&gt;set&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;person.addObserver(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;fullName&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;, &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt;() {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;  &lt;span style=&quot;color:#777&quot;&gt;// делаем что-нибудь при изменении fullName&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Это позволяет нам вместо периодического вычисления всех наблюдаемых блоков кода (вспомните, чем мы занимались в AngularJS) просто реагировать на изменения моделей, когда кто-то говорит &lt;code&gt;set&lt;/code&gt;. В сочетании с такими возможностями как &lt;strong&gt;вычисляемые поля моделей&lt;/strong&gt; и мощными шаблонами это дает нам еще один способ реагирования на изменения данных в нашем приложении.&lt;/p&gt;
+
+&lt;h5 id=&quot;section-7&quot;&gt;Преимущества&lt;/h5&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Тратим меньше ресурсов для вычисления изменений UI.&lt;/li&gt;
+  &lt;li&gt;В нашем распоряжении “толстые модели”, в которые мы всегда можем добавить расширенную логику, валидации, преобразование данных, персистентность и прочие приятные мелочи. &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;section-8&quot;&gt;Недостатки&lt;/h5&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Появляются лишние тяжелые сущности в виде моделей, которые необходимо поддерживать. Это уменьшает гибкость кода и повышает порог вхождения.&lt;/li&gt;
+  &lt;li&gt;Сложно разрешаются ситуации, когда поле в шаблоне зависит от нескольких моделей сразу.&lt;/li&gt;
+  &lt;li&gt;Необходимость работать с геттерами и сеттерами и помнить о том, что каждое твое изменение модели запускает “магию”.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;objectobserve&quot;&gt;Object.observe&lt;/h4&gt;
+
+&lt;p&gt;Говоря о двух альтернативах data-binding будет грехом не упомянуть о новой возможности стандарта ECMAScript 6 — &lt;a href=&quot;http://updates.html5rocks.com/2012/11/Respond-to-change-with-Object-observe&quot;&gt;Object.observe&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Эта штука обещает если не примирить два лагеря, то точно дать возможность стать ближе друг к другу. Если говорить коротко, то observe дает возможность подписываться на изменения POJO так же, как мы подписывались на толстую модель, то есть реализует для них паттерн “Observer”!&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; beingWatched = {};
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#777&quot;&gt;// Определяем коллбек-функцию, которая будет получать оповещения об изменениях&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;somethingChanged&lt;/span&gt;(changes) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// Делаем тут что-нибудь&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;}
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;Object.observe(beingWatched, somethingChanged);
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Этот подход может частично нивелировать те проблемы, которые мы имеем в подходе с толстыми моделями. На сегодняшний момент данных функционал уже доступен в последних версиях V8 (Chrome, Safari, Opera) и &lt;a href=&quot;https://bugzilla.mozilla.org/show_bug.cgi?id=800355&quot;&gt;скоро&lt;/a&gt; будет доступен в Firefox. &lt;/p&gt;
+
+&lt;p&gt;Чтож, осталось подождать и посмотреть, как &lt;code&gt;Object.observe&lt;/code&gt; изменит мир дата-биндинга. Если же вы работаете с каким-нибудь другим языком и нем реализованы подобные возможности — смело беритесь перо и расскажите нам, как можно использовать эту технологию для облегчения разработки!&lt;/p&gt;
+
+&lt;h3 id=&quot;section-9&quot;&gt;Виртуальные визуальные деревья&lt;/h3&gt;
+
+&lt;p&gt;Все это время мы обсуждали с вами технологии создания интерфейсов, которые реагируют на изменения данных тем или иным способом. Давайте посмотрим на еще одну интересную реализацию идеи реактивного UI, который явила миру компания Facebook в своем продукте &lt;a href=&quot;http://facebook.github.io/react/&quot;&gt;ReactJS&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Начнем с того, что ребята сделали одну очень интересную и необычную вещь. Вместо того, чтобы работать с DOM браузера, как делают все остальные, они взяли и создали свои объекты дерева!&lt;/p&gt;
+
+&lt;p&gt;Так, например, браузерный элемент &lt;code&gt;&amp;lt;div&amp;gt;&lt;/code&gt; соответствует объекту &lt;code&gt;React.DOM.div&lt;/code&gt;, а тег &lt;code&gt;&amp;lt;a&amp;gt;&lt;/code&gt; соответствует &lt;code&gt;React.DOM.a&lt;/code&gt;. Зачем они это сделали? Зачем плодить сущности и создавать свои объекты, когда можно пользоваться &lt;a href=&quot;https://developer.mozilla.org/ru/docs/DOM/document.createElement&quot;&gt;document.createElement&lt;/a&gt;?&lt;/p&gt;
+
+&lt;p&gt;Ответ кроется в двух вещах:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Свои элементы визуального дерева создаются быстрее и “стоят” дешевле, потому что они не имеют нативного представления.&lt;/li&gt;
+  &lt;li&gt;Свои элементы можно расширить различными функциями, которых нет у браузерных DOM-элементов.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Не буду больше вас томить и покажу пример из документации ReactJS:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; Timer = React.createClass({
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;  &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;getInitialState&lt;/span&gt;: &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt;() {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; {&lt;span style=&quot;color:#606&quot;&gt;secondsElapsed&lt;/span&gt;: &lt;span style=&quot;color:#00D&quot;&gt;0&lt;/span&gt;};
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;  },
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;  &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;tick&lt;/span&gt;: &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt;() {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.setState({&lt;span style=&quot;color:#606&quot;&gt;secondsElapsed&lt;/span&gt;: &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.state.secondsElapsed + &lt;span style=&quot;color:#00D&quot;&gt;1&lt;/span&gt;});
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n9&quot; name=&quot;n9&quot;&gt;9&lt;/a&gt;&lt;/span&gt;  },
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n10&quot; name=&quot;n10&quot;&gt;10&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n11&quot; name=&quot;n11&quot;&gt;11&lt;/a&gt;&lt;/span&gt;  &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;componentDidMount&lt;/span&gt;: &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt;() {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n12&quot; name=&quot;n12&quot;&gt;12&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.interval = setInterval(&lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.tick, &lt;span style=&quot;color:#00D&quot;&gt;1000&lt;/span&gt;);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n13&quot; name=&quot;n13&quot;&gt;13&lt;/a&gt;&lt;/span&gt;  },
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n14&quot; name=&quot;n14&quot;&gt;14&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n15&quot; name=&quot;n15&quot;&gt;15&lt;/a&gt;&lt;/span&gt;  &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;componentWillUnmount&lt;/span&gt;: &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt;() {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n16&quot; name=&quot;n16&quot;&gt;16&lt;/a&gt;&lt;/span&gt;    clearInterval(&lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.interval);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n17&quot; name=&quot;n17&quot;&gt;17&lt;/a&gt;&lt;/span&gt;  },
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n18&quot; name=&quot;n18&quot;&gt;18&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n19&quot; name=&quot;n19&quot;&gt;19&lt;/a&gt;&lt;/span&gt;  &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;render&lt;/span&gt;: &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt;() {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n20&quot; name=&quot;n20&quot;&gt;20&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; (
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n21&quot; name=&quot;n21&quot;&gt;21&lt;/a&gt;&lt;/span&gt;      React.DOM.div({&lt;span style=&quot;color:#606&quot;&gt;style&lt;/span&gt;: {&lt;span style=&quot;color:#606&quot;&gt;&lt;span style=&quot;color:#404&quot;&gt;&#39;&lt;/span&gt;&lt;span&gt;background-color&lt;/span&gt;&lt;span style=&quot;color:#404&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;: &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;red&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;}}, 
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n22&quot; name=&quot;n22&quot;&gt;22&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Seconds Elapsed: &lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;, &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.state.secondsElapsed)
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n23&quot; name=&quot;n23&quot;&gt;23&lt;/a&gt;&lt;/span&gt;    );
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n24&quot; name=&quot;n24&quot;&gt;24&lt;/a&gt;&lt;/span&gt;  }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n25&quot; name=&quot;n25&quot;&gt;25&lt;/a&gt;&lt;/span&gt;});
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n26&quot; name=&quot;n26&quot;&gt;26&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n27&quot; name=&quot;n27&quot;&gt;27&lt;/a&gt;&lt;/span&gt;React.renderComponent(Timer(), mountNode);
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;В терминологии ReactJS мы только что создали новый &lt;strong&gt;компонент&lt;/strong&gt; Timer. Данный компонент занимается тем, что ежесекундно обновляет свое &lt;strong&gt;состояние&lt;/strong&gt; при помощи функции &lt;code&gt;tick&lt;/code&gt; и перерисовывается при изменении этого состояния.&lt;/p&gt;
+
+&lt;p&gt;Внимательный читатель уже заметил, что основная магия заключена в методе &lt;code&gt;render&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;render&lt;/span&gt;: &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt;() {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; React.DOM.div(&lt;span style=&quot;color:#069&quot;&gt;null&lt;/span&gt;, &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Seconds Elapsed: &lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;, &lt;span style=&quot;color:#950&quot;&gt;this&lt;/span&gt;.state.secondsElapsed);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;}
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Посмотрите, метод &lt;code&gt;render&lt;/code&gt; возвращает нам экземпляр визуального дерева, состоящий в данном случае из одного элемента &lt;code&gt;div&lt;/code&gt; без атрибутов, у которого детьми будут две текстовые ноды:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;“Seconds Elapsed: “&lt;/li&gt;
+  &lt;li&gt;this.state.secondsElapsed&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Дальше работает специальная “магия”, которая отображает получившееся визуальное дерево ReactJS в дерево DOM.&lt;/p&gt;
+
+&lt;p&gt;Давайте попробуем формализовать, что же мы на текущий момент поняли:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Мы можем создавать свои компоненты, из которых можно собирать свое виртуальное визуальное дерево.&lt;/li&gt;
+  &lt;li&gt;Компоненты имеют &lt;strong&gt;опции&lt;/strong&gt; (props) и &lt;strong&gt;внутреннее состояние&lt;/strong&gt; (state).&lt;/li&gt;
+  &lt;li&gt;Компоненты предоставляют метод &lt;code&gt;render&lt;/code&gt;, который должен вернуть визуальное дерево, соответствующее текущему набору &lt;strong&gt;опций&lt;/strong&gt; и &lt;strong&gt;внутреннему состоянию&lt;/strong&gt;.&lt;/li&gt;
+  &lt;li&gt;ReactJS сам заботится о том, чтобы наше виртуальное дерево отразилось на DOM.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Эти четыре пункта описывают всю суть модели React. Попробую объяснить модель ReactJS чуть более подробно.&lt;/p&gt;
+
+&lt;p&gt;Представьте, что ваше приложение имеет конфигурационный файл, в который вы кладете описание состояние приложения и модели данных. Далее вы создаете большую функцию &lt;code&gt;render&lt;/code&gt;, которая возвращает визуальное дерево в соответствии с этой конфигурацией. Каждый раз, когда вы хотите привести ваше приложение в новое состояние (например, показать новое окно), вы просто меняете конфигурацию и снова запускаете &lt;code&gt;render&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Разумеется, данный утрированный подход полной перерисовки в реальной жизни будет довольно медленным и я вам его использовать в своих приложениях не советую. Тем не менее, это хороший способ осознать, как все работает.&lt;/p&gt;
+
+&lt;p&gt;В реальности ReactJS старается оптимизировать этой подход следующим образом:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Вам не обязательно вносить изменения в &lt;strong&gt;глобальный стейт&lt;/strong&gt; приложения (наш конфигурационный файл), чтобы внести небольшие изменения в приложение. Вместо этого вы можете установить &lt;strong&gt;состояние&lt;/strong&gt; отдельно взятому компоненту, что приведет к перерисовке только его поддерева.&lt;/li&gt;
+  &lt;li&gt;Используется специальный Diff-алгоритм, который позволяет оптимизировать рендеринг и сделать минимальное число изменений в ваше визуальное дерево.&lt;/li&gt;
+  &lt;li&gt;Вы можете сами на уровне компонента отслеживать ситуации, когда нужно обновлять свое визуально дерево, а когда нет.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;section-10&quot;&gt;Преимущества&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Все преобразования данных выполняются одним и тем же способом.&lt;/li&gt;
+  &lt;li&gt;State и Props - POJO, использование толстых моделей не обязательно.&lt;/li&gt;
+  &lt;li&gt;Маленькое количество сущностей обеспечивает быстрое вхождение.&lt;/li&gt;
+  &lt;li&gt;ReactJS сам выполняет преобразование из одного состояние визуального дерева в другое самым оптимальным путем. Это также приводит к тому, что сокращается объем кода.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;section-11&quot;&gt;Недостатки&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Возможны проблемы производительности при плохом проектировании приложения.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;section-12&quot;&gt;Выводы&lt;/h2&gt;
+
+&lt;p&gt;В данной статье я рассмотрел существующие подходы к созданию реактивных UI. В следующих статьях я буду дальше рассматривать технологию виртуальных деревьев и расскажу, как с ее помощи решаются типичные задачи.&lt;/p&gt;
+
+&lt;p&gt;Спасибо всем за внимание!&lt;/p&gt;
+
+</description>
+        <pubDate>Fri, 03 Jan 2014 12:00:00 +0400</pubDate>
+        <link>http://panferov.me/2014/01/03/reactive.html</link>
+        <guid isPermaLink="true">http://panferov.me/2014/01/03/reactive.html</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>Promise и Deferred. Часть 3. EventMachine.</title>
+        <description>&lt;p&gt;В продолжении темы промисов хочется показать, какие возможности в этом отношении есть у других языков, способных работать в асинхнонной парадигме. Одним из таких языков является Ruby в сочетании с фреймворком EventMachine.&lt;/p&gt;
+
+&lt;p&gt;В данной статье я не буду долго рассказывать про EventMachine. Просто скажу, что EventMachine - это фреймворк на Ruby, реализующий паттерн Reactor и предоставляющий возможности аналогичные &lt;a href=&quot;netty&quot;&gt;JBoss Netty&lt;/a&gt;, &lt;a href=&quot;mina&quot;&gt;Apache MINA&lt;/a&gt;, &lt;a href=&quot;twisted&quot;&gt;Twisted&lt;/a&gt;, &lt;a href=&quot;node&quot;&gt;Node.js&lt;/a&gt;, libevent and libev.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;p&gt;Данный фреймворк предоставляет свою реализацию Deferred, о которой я хотел бы рассказать. Основаная функциональность заключена в модуле EventMachine::Deferrable, который можено подмешать к любому классу и получить в свое распоряжение следующие возможности:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;class&lt;/span&gt; &lt;span style=&quot;color:#B06;font-weight:bold&quot;&gt;TestClass&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;  include &lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;EventMachine&lt;/span&gt;::&lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;Deferrable&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;test = &lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;TestClass&lt;/span&gt;.new
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;test.callback &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;        print &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Операция завершилась успешно&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n9&quot; name=&quot;n9&quot;&gt;9&lt;/a&gt;&lt;/span&gt;test.errback &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n10&quot; name=&quot;n10&quot;&gt;10&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;        print &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Операция провалилась&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n11&quot; name=&quot;n11&quot;&gt;11&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Методы &lt;code&gt;callback&lt;/code&gt; и &lt;code&gt;errback&lt;/code&gt; являются аналогами первого и второго аргументами в методе &lt;code&gt;then&lt;/code&gt; библиотеки Q. Зарезолвить или зареждектить промис в EM можно при помощи методов &lt;code&gt;succeed&lt;/code&gt; и &lt;code&gt;fail&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Также, если вам просто нужно создать Deferred-объект и не хочется ради этого создавать лишний класс — можно воспользоваться готовым классом-пустышкой EventMachine::DefaultDeferrable. В исходном коде он определен таким образом:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;class&lt;/span&gt; &lt;span style=&quot;color:#B06;font-weight:bold&quot;&gt;DefaultDeferrable&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;  include &lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;Deferrable&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/eventmachine/eventmachine/blob/master/lib/em/deferrable.rb&quot;&gt;Реализация&lt;/a&gt; Deferred в EM довольно проста и рекомендуется к ознакомлению всем, кто хочет лучше изнать, что такое Deferred.&lt;/p&gt;
+
+</description>
+        <pubDate>Sun, 24 Nov 2013 12:00:00 +0400</pubDate>
+        <link>http://panferov.me/2013/11/24/promises-part3-eventmachine.html</link>
+        <guid isPermaLink="true">http://panferov.me/2013/11/24/promises-part3-eventmachine.html</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>Promise и Deferred. Часть 2. Библиотека Q.</title>
+        <description>&lt;p&gt;Сегодня в нашем обзоре рассмотрим библиотеку промисов Q. Данная библиотека предоставляет каноническую (на мой взгляд) и самую полную реализацию промисов. &lt;/p&gt;
+
+&lt;p&gt;Дальше я во многом буду повторять официальную документацию к библиотеке, но постараюсь попутно объяснять вещи более понятным языком, чем это делает ман.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;p&gt;Промисы имеют метод &lt;code&gt;then&lt;/code&gt;, который вы можете использовать для того, чтобы получить вычисленное значение или ошибку. Если вычисление значение пройдет успешно, то будет вызвана первая переданная в метод &lt;code&gt;then&lt;/code&gt; функция. Если же в процессе вычисления будет выброшено исключение, то будет вызвана функция, которую можно передать вторым аргументом.&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;promiseMeSomething().then(
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (value) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;        }, 
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (reason) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;        }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;);
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Важно учесть, что разрешение (resolution) промиса всегда выполняется асинхронно в следующем тике. Это гарантирует вам, что &lt;code&gt;then&lt;/code&gt; вернет управление в ваш код до вызова любого из переданных обработчиков.&lt;/p&gt;
+
+&lt;p&gt;Дальше мы рассмотрим различные особенности промисов, которые предоставляет нам библиотека Q.&lt;/p&gt;
+
+&lt;h2 id=&quot;propagation&quot;&gt;Всплытие (Propagation)&lt;/h2&gt;
+
+&lt;p&gt;Вы можете запомнить результат выполнения метода &lt;code&gt;then&lt;/code&gt;. Библиотека устроена таким образом, что результатом выполнения метода &lt;code&gt;then&lt;/code&gt; будет новый промис с любопытными свойствами:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; outputPromise = getInputPromise().then(
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (input) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;                &lt;span style=&quot;color:#777&quot;&gt;// function success&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;        }, 
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (reason) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;                &lt;span style=&quot;color:#777&quot;&gt;// function error&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;        }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;);
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;code&gt;outputPromise&lt;/code&gt; становится промисом для результата выполнения одного из обработчиков &lt;code&gt;getInputPromise&lt;/code&gt;. Так как выполниться может только один из них (функция либо вернет значение, либо выбросит исключение), то только одна функция будет источником результата для &lt;code&gt;outputPromise&lt;/code&gt;. Назовем сработавшую функцию (success или error) “хендлером” и посмотрим на правила, которыми руководствуется библиотека Q для разрешения &lt;code&gt;outputPromise&lt;/code&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Если хендлер успешно вернул значение, то &lt;code&gt;outputPromise&lt;/code&gt; будет разрешен (далее “зарезолвлен”, от слова “resolve”) с этим значением и вызовом первого, “успешного” обработчика.&lt;/li&gt;
+  &lt;li&gt;Если хендлер выбросил исключение, то &lt;code&gt;outputPromise&lt;/code&gt; будет разрешен с вызовом второго обработчика (далее “зареджекчен”, от слова “reject”), обработчика ошибки.&lt;/li&gt;
+  &lt;li&gt;Существует еще одна любопытная возможность. Если хендлер вернет промис, то &lt;code&gt;outputPromise&lt;/code&gt; “превратится” в него. Эта особенность сложна для понимания, но в некоторых ситуациях на практике она может быть очень удобна.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Если &lt;code&gt;getInputPromise()&lt;/code&gt; реждектится и вы при вызове &lt;code&gt;then&lt;/code&gt; не указали обработчик ошибки, то ошибка будет отправлена в &lt;code&gt;outputPromise&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; outputPromise = getInputPromise().then(
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (value) { }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#777&quot;&gt;// второго обработчика нет!&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;);
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Если &lt;code&gt;getInputPromise()&lt;/code&gt; резолвится и вы при вызове &lt;code&gt;then&lt;/code&gt; не указали обработчик успешной ситуации, то результат будет отправлен в &lt;code&gt;outputPromise&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; outputPromise = getInputPromise().then(
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#069&quot;&gt;null&lt;/span&gt;, &lt;span style=&quot;color:#777&quot;&gt;// первого обработчика нет&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (error) {}
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;);
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Q предоставляет сокращение для такой формы записи в виде метода &lt;code&gt;fail&lt;/code&gt;. Используйте его тогда, когда вы заинтересованы только в обработке ошибочного результата:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; outputPromise = getInputPromise().fail(
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (error) {}
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;);
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Если вы пишете код под современные JS-движки или используете CoffeeScript, то вы можете писать название метода как &lt;code&gt;catch&lt;/code&gt;. &lt;/p&gt;
+
+&lt;p&gt;Также промисы имеют функцию &lt;code&gt;fin&lt;/code&gt;, которая может использоваться в качестве блока &lt;code&gt;finally&lt;/code&gt;. Обработчик в этом блоке вызывается тогда, когда промис либо резолвится, либо реджектится. Полученное значение всплывет в &lt;code&gt;outputPromise&lt;/code&gt;, если обработчик &lt;code&gt;finally&lt;/code&gt; не завершился с ошибкой. Если обработчик вернет промис, то всплытие будет задержано до разрешения этого промиса.&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; outputPromise = getInputPromise().fin(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; () {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#777&quot;&gt;// закрывает файловые дескрипторы, соединения и т.д.&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Если обработчик вернет значение, то оно будет проигнорировано.&lt;/li&gt;
+  &lt;li&gt;Если обработчик выбросит исключение, то исключение всплывет в &lt;code&gt;outputPromise&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Если обработчик вернет промис, то всплытие будет задержано до его разшения. Разрешение промиса будет происходить по тем же правилам, что указаны в первых двух пунктах.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;chaining&quot;&gt;Цепочки вызовов (Chaining)&lt;/h2&gt;
+
+&lt;p&gt;Существует несколько способов чейнить промисы. Вы можете делать это как внутри, так и вне обработчиков. Два следующих примера эквивалентны.&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; getUsername().then(
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (username) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;          &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; getUser(username).then(
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;                  &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (user) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;                    &lt;span style=&quot;color:#777&quot;&gt;// Если мы пришли сюда, значит не случилось обшибок&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;                    &lt;span style=&quot;color:#777&quot;&gt;// на прошлых шагах. Значение, которое вернет этот&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;                    &lt;span style=&quot;color:#777&quot;&gt;// обработчик или ошибка, которую он бросит, разрешит&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;                    &lt;span style=&quot;color:#777&quot;&gt;// промис, который мы вернули на первой строке.&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n9&quot; name=&quot;n9&quot;&gt;9&lt;/a&gt;&lt;/span&gt;                  }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n10&quot; name=&quot;n10&quot;&gt;10&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;          )
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n11&quot; name=&quot;n11&quot;&gt;11&lt;/a&gt;&lt;/span&gt;        }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n12&quot; name=&quot;n12&quot;&gt;12&lt;/a&gt;&lt;/span&gt;);
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; getUsername()
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;.then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (username) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; getUser(username);
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;})
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;.then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (user) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// Если мы пришли сюда, значит не случилось обшибок&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// на прошлых шагах. Значение, которое вернет этот&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// обработчик или ошибка, которую он бросит, разрешит&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n9&quot; name=&quot;n9&quot;&gt;9&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// промис, который мы вернули на первой строке.&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n10&quot; name=&quot;n10&quot;&gt;10&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Единственная разница в том, что при использования первого способа вы можете обрабатывать все полученные значения промисов вследствия создания замыканий.&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;authenticate&lt;/span&gt;() {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; getUsername()
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;    .then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (username) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; getUser(username);
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;    })
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// тут мы применяем простой чейнинг, так как нам не нужен username на следующем шаге&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;    .then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (user) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; getPassword()
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n9&quot; name=&quot;n9&quot;&gt;9&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#777&quot;&gt;// а вот тут мы создаем замыкание, потому что нам нужен и user и password&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n10&quot; name=&quot;n10&quot;&gt;10&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;        .then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (password) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n11&quot; name=&quot;n11&quot;&gt;11&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;if&lt;/span&gt; (user.passwordHash !== hash(password)) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n12&quot; name=&quot;n12&quot;&gt;12&lt;/a&gt;&lt;/span&gt;                &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;throw&lt;/span&gt; &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;new&lt;/span&gt; Error(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Can&#39;t authenticate&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n13&quot; name=&quot;n13&quot;&gt;13&lt;/a&gt;&lt;/span&gt;            }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n14&quot; name=&quot;n14&quot;&gt;14&lt;/a&gt;&lt;/span&gt;        });
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n15&quot; name=&quot;n15&quot;&gt;15&lt;/a&gt;&lt;/span&gt;    });
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n16&quot; name=&quot;n16&quot;&gt;16&lt;/a&gt;&lt;/span&gt;}
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;Комбинация промисов&lt;/h3&gt;
+
+&lt;p&gt;Вы можете превратить массив промисов в промис для для всего массива используя метод &lt;code&gt;all&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; Q.all([
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    eventualAdd(&lt;span style=&quot;color:#00D&quot;&gt;2&lt;/span&gt;, &lt;span style=&quot;color:#00D&quot;&gt;2&lt;/span&gt;),
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;    eventualAdd(&lt;span style=&quot;color:#00D&quot;&gt;10&lt;/span&gt;, &lt;span style=&quot;color:#00D&quot;&gt;20&lt;/span&gt;)
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;]);
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Полученный просим будет зарезолвлен тогда, когда будет зарезолвлены все его компоненты. Если же один из них будет зареджекчен, то весь промис будет зареджекчен.&lt;/p&gt;
+
+&lt;p&gt;Если у вас есть промис на массив, то вы можете использовать &lt;code&gt;spread&lt;/code&gt; как замену &lt;code&gt;then&lt;/code&gt;. Эта функция позволяет “заполнить” результатами переданных просимов аргументы обработчика. Обработчик ошибки будет вызван при наступлении любой ошибки. &lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;eventualAdd&lt;/span&gt;(a, b) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; Q.spread([a, b], &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (a, b) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; a + b;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;    })
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;}
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Метод &lt;code&gt;spread&lt;/code&gt; вызывает &lt;code&gt;all&lt;/code&gt; так что вы можете опустить all в цепочке.&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; getUsername()
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;.then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (username) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;          &lt;span style=&quot;color:#777&quot;&gt;// возвращает массив, один из элементов которого - промис&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; [username, getUser(username)];
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;})
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;.spread(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (username, user) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#777&quot;&gt;// работаем с результатами выполнения&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Метод &lt;code&gt;all&lt;/code&gt; возвращает промис для массива значений. Когда этот промис разрешается, он будет содержать массив значений для кадого из исходных промисов в том порядке, в котором они стояли в массиве. Если один из входящих в массив промисов был зареджекчен, то общий промис будет зареджекчен немедленно, не дожидаясь результата остальных. Если вы хотите подождать момента, когда все промисы будут либо зареджекчены, либо зарезолвлены, то используйте метод &lt;code&gt;allSettled&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;Q.allSettled(promises)
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;.then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (results) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;    results.forEach(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (result) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;if&lt;/span&gt; (result.state === &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;fulfilled&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;                        &lt;span style=&quot;color:#777&quot;&gt;// тут мы оказывается, если промис был зарезолвлен&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; value = result.value;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;        } &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;else&lt;/span&gt; {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;                  &lt;span style=&quot;color:#777&quot;&gt;// а тут - если был зареджекчен&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n9&quot; name=&quot;n9&quot;&gt;9&lt;/a&gt;&lt;/span&gt;            &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; reason = result.reason;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n10&quot; name=&quot;n10&quot;&gt;10&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;        }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n11&quot; name=&quot;n11&quot;&gt;11&lt;/a&gt;&lt;/span&gt;    });
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n12&quot; name=&quot;n12&quot;&gt;12&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;Последовательности&lt;/h3&gt;
+
+&lt;p&gt;Если вы ходите запустить последовательно несколько функций, которые возвращают промисы, вы можете сделать это вручную:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; foo(initialVal).then(bar).then(baz).then(qux);
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Тем не менее, бывают ситуации, когда вам нужно запустить динамически сконструированную последовательность функций. Вы можете сделать это следующим образом:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; funcs = [foo, bar, baz, qux];
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; result = Q(initialVal);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;funcs.forEach(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (f) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;    result = result.then(f);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;});
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; result;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Этот пример можно сделать немного короче, если использовать функцию &lt;code&gt;reduce&lt;/code&gt; (учтите, что метод &lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce&quot;&gt;method&lt;/a&gt; для массивов представлен в спецификации ECMAScript 5):&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; funcs.reduce(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (soFar, f) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; soFar.then(f);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;}, Q(initialVal));
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Или же вы можете использовать этот супер-компактный вариант, использую статический метод &lt;code&gt;Q.when&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; funcs.reduce(Q.when, Q(initialVal));
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;section-2&quot;&gt;Обработка ошибок&lt;/h2&gt;
+
+&lt;p&gt;Некоторым кажется не очевидным один аспект работы промисов. Рассмотрим его подробнее: если вы выбросите исключение в обработчике успешного результата функции (первый аргумент &lt;code&gt;then&lt;/code&gt;), то оно не будет поймано обработчиком ошибки (второй аргумент &lt;code&gt;then&lt;/code&gt;)&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; foo()
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;.then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (value) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;throw&lt;/span&gt; &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;new&lt;/span&gt; Error(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Can&#39;t bar.&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;}, &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (error) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// сюда мы придем только тогда, когда foo &amp;quot;упадет&amp;quot;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Чтобы понять, почему так происходит, попробуейте думать о промисе как о блоке &lt;code&gt;try&lt;/code&gt;/&lt;code&gt;catch&lt;/code&gt;. Мы пытаемся выполнять функцию &lt;code&gt;foo()&lt;/code&gt; как бы в блоке &lt;code&gt;try&lt;/code&gt; и обработчик ошибки тут выступает в качестве блока &lt;code&gt;catch&lt;/code&gt;. Обработчик успешного разрешения промиса в данном случае выступает как код, идущий &lt;em&gt;после&lt;/em&gt; блока &lt;code&gt;try&lt;/code&gt;/&lt;code&gt;catch&lt;/code&gt;. Очевидно, что такой код нуждается в собственной обработке ошибок.  &lt;/p&gt;
+
+&lt;p&gt;В терминах промисов это значит, что вам нужно сделать цепочку вызовов с указанием обработчика ошибки:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; foo()
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;.then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (value) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;throw&lt;/span&gt; &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;new&lt;/span&gt; Error(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Can&#39;t bar.&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;})
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;.fail(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (error) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// сюда мы придем как в случае ошибки в foo (так как ошибка &amp;quot;всплывет&amp;quot;), &lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// так и в случае ошибки резолв-хендлера &lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;section-3&quot;&gt;Оповещения о прогрессе выполнения&lt;/h2&gt;
+
+&lt;p&gt;В библиотеке реализована возможность промисам сообщать собственный прогресс выполнения, например, для долгих задач, таких как загрузка файла. Вы должны понимать, что не все промисы автоматически реализуют такую возможность. Но для тех промисов, что это делают, у вас есть возможсть получить прогресс используя третий параметр функции &lt;code&gt;then&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; uploadFile()
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;.then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; () {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// Тут мы успешно загрузили файл&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;}, &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (err) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// Тут мы получаем причину ошибки загрузки файла&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;}, &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (progress) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// Тут мы получаем оповещение о прогрессе в то время, пока файл загружается&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Q представляет нам более короткую форму записи (похожее мы видели на примере функции &lt;code&gt;fail&lt;/code&gt;):&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; uploadFile().progress(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (progress) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// Тут мы получаем оповещение о прогрессе&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;section-4&quot;&gt;Окончание цепочки промисов&lt;/h2&gt;
+
+&lt;p&gt;Когда вы доходите до конца цепочки промисов, вы должны решить, хотите ли вы получить новый промис в качестве результата, или же вы хотите закончить цепочку. Если вы никак не используете полученный последний промис, то вы рискуете потерять какое-нибудь исключение по причине того, что промисы перехватывают ошибки.&lt;/p&gt;
+
+&lt;p&gt;Вместо того, чтобы возвращать последний промис вы можете закончить цепочку, вызвав метод &lt;code&gt;done()&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Сравните:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#777&quot;&gt;// возвращаем промис&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; foo()
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;.then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; () {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;bar&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;foo()
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;.then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; () {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;bar&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;})
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;.done();
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Использование последнего варианта позволяет убедиться, что никакое исключение не будет потеряно в ходе обработки промиса. Если вы не обработали его в цепочке вызовов, то оно будет выброшено. Эта мера позволяет вам увидеть проблемы в коде и среагировать на них.&lt;/p&gt;
+
+&lt;h2 id=&quot;section-5&quot;&gt;С чего начать?&lt;/h2&gt;
+
+&lt;p&gt;Все, что было написано выше было рассчитано на то, что вы уже взяли где-то готовый промис. Давайте теперь посмотрим, как мы можем создать промис самостоятельно.&lt;/p&gt;
+
+&lt;h3 id=&quot;qfcall&quot;&gt;Используем &lt;code&gt;Q.fcall&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;Вы можете вернуть промис для какого-то значения, используя &lt;code&gt;Q.fcall&lt;/code&gt;. В следующем примере мы получим промис для значения 10.&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; Q.fcall(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; () {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#00D&quot;&gt;10&lt;/span&gt;;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Также вы можете использовать &lt;code&gt;fcall&lt;/code&gt; для получения промиса исключения:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; Q.fcall(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; () {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;throw&lt;/span&gt; &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;new&lt;/span&gt; Error(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Can&#39;t do it&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Как нам обещает название, &lt;code&gt;fcall&lt;/code&gt; может быть использован для вызова функций и даже для вызова тех функций, которые возвращают промисы:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; Q.fcall(eventualAdd, &lt;span style=&quot;color:#00D&quot;&gt;2&lt;/span&gt;, &lt;span style=&quot;color:#00D&quot;&gt;2&lt;/span&gt;);
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;deferreds&quot;&gt;Использование Deferreds&lt;/h3&gt;
+
+&lt;p&gt;Если вы имеете дело с асинхронными функциями, которые используют коллбек, а не промисы, вы можете использовать существующие шоткаты, которые представляет Q (например &lt;code&gt;Q.nfcall&lt;/code&gt;). Тем не менее, в большинстве случаев вам будет удобнее воспользоваться объектами &lt;code&gt;deferred&lt;/code&gt;. &lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; deferred = Q.defer();
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;FS.readFile(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;foo.txt&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;, &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;utf-8&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;, &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (error, text) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;if&lt;/span&gt; (error) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;        deferred.reject(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;new&lt;/span&gt; Error(error));
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;    } &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;else&lt;/span&gt; {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;        deferred.resolve(text);
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;    }
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;});
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n9&quot; name=&quot;n9&quot;&gt;9&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; deferred.promise;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Обработе внимание, что &lt;code&gt;deferred&lt;/code&gt; может быть разрешен при помощи значения или другого промиса.&lt;/p&gt;
+
+&lt;p&gt;Давайте на примере посмотрим, как мы можем использовать промисы на практике. Ниже приведена упрощенная реализация &lt;code&gt;Q.delay&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;delay&lt;/span&gt;(ms) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; deferred = Q.defer();
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;    setTimeout(deferred.resolve, ms);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; deferred.promise;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;}
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;В следующем примере рассмотрим реализацию &lt;code&gt;Q.timeout&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;timeout&lt;/span&gt;(promise, ms) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; deferred = Q.defer();
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;    Q.when(promise, deferred.resolve);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;    delay(ms).then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; () {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;        deferred.reject(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;new&lt;/span&gt; Error(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Timed out&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;));
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;    });
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; deferred.promise;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;}
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Не обойдем вниманием и отправку оповещений о прогрессе выполнения с использованием метода &lt;code&gt;deferred.notify&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Для иллюстрации, давайте напишем простую обертку над браузерным XMLHttpRequest.&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;requestOkText&lt;/span&gt;(url) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; request = &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;new&lt;/span&gt; XMLHttpRequest();
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;var&lt;/span&gt; deferred = Q.defer();
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;    request.open(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;GET&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;, url, &lt;span style=&quot;color:#069&quot;&gt;true&lt;/span&gt;);
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;    request.onload = onload;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;    request.onerror = onerror;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;    request.onprogress = onprogress;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n9&quot; name=&quot;n9&quot;&gt;9&lt;/a&gt;&lt;/span&gt;    request.send();
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n10&quot; name=&quot;n10&quot;&gt;10&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n11&quot; name=&quot;n11&quot;&gt;11&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;onload&lt;/span&gt;() {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n12&quot; name=&quot;n12&quot;&gt;12&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;if&lt;/span&gt; (request.status === &lt;span style=&quot;color:#00D&quot;&gt;200&lt;/span&gt;) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n13&quot; name=&quot;n13&quot;&gt;13&lt;/a&gt;&lt;/span&gt;            deferred.resolve(request.responseText);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n14&quot; name=&quot;n14&quot;&gt;14&lt;/a&gt;&lt;/span&gt;        } &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;else&lt;/span&gt; {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n15&quot; name=&quot;n15&quot;&gt;15&lt;/a&gt;&lt;/span&gt;            deferred.reject(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;new&lt;/span&gt; Error(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Status code was &lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; + request.status));
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n16&quot; name=&quot;n16&quot;&gt;16&lt;/a&gt;&lt;/span&gt;        }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n17&quot; name=&quot;n17&quot;&gt;17&lt;/a&gt;&lt;/span&gt;    }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n18&quot; name=&quot;n18&quot;&gt;18&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n19&quot; name=&quot;n19&quot;&gt;19&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;onerror&lt;/span&gt;() {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n20&quot; name=&quot;n20&quot;&gt;20&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;        deferred.reject(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;new&lt;/span&gt; Error(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Can&#39;t XHR &lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; + JSON.stringify(url)));
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n21&quot; name=&quot;n21&quot;&gt;21&lt;/a&gt;&lt;/span&gt;    }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n22&quot; name=&quot;n22&quot;&gt;22&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n23&quot; name=&quot;n23&quot;&gt;23&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;onprogress&lt;/span&gt;(event) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n24&quot; name=&quot;n24&quot;&gt;24&lt;/a&gt;&lt;/span&gt;        deferred.notify(event.loaded / event.total);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n25&quot; name=&quot;n25&quot;&gt;25&lt;/a&gt;&lt;/span&gt;    }
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n26&quot; name=&quot;n26&quot;&gt;26&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n27&quot; name=&quot;n27&quot;&gt;27&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;return&lt;/span&gt; deferred.promise;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n28&quot; name=&quot;n28&quot;&gt;28&lt;/a&gt;&lt;/span&gt;}
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Давайте посмотрим, как мы можем использовать получившуюся &lt;code&gt;requestOkText&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;requestOkText(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;http://localhost:3000&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;)
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;.then(&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (responseText) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;                &lt;span style=&quot;color:#777&quot;&gt;// Если HTTP запрос вернет код 200 OK, то мы логируем текст ответа&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;    console.log(responseText);
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;}, &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (error) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// Если в ходе запроса произошла ошибка или вернулся не 200 OK, то мы логируем ошибку&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;    console.error(error);
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;}, &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt; (progress) {
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n9&quot; name=&quot;n9&quot;&gt;9&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#777&quot;&gt;// Логируем прогресс выполнения запроса:&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n10&quot; name=&quot;n10&quot;&gt;10&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;    console.log(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Request progress: &lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt; + Math.round(progress * &lt;span style=&quot;color:#00D&quot;&gt;100&lt;/span&gt;) + &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;%&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;);
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n11&quot; name=&quot;n11&quot;&gt;11&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;section-6&quot;&gt;Источники&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/kriskowal/q/blob/master/README.md&quot;&gt;Официальная документация&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Fri, 22 Nov 2013 22:00:00 +0400</pubDate>
+        <link>http://panferov.me/2013/11/22/promises-part2-q.html</link>
+        <guid isPermaLink="true">http://panferov.me/2013/11/22/promises-part2-q.html</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>Promise и Deferred. Часть 1. Введение.</title>
+        <description>&lt;h2 id=&quot;section&quot;&gt;Простыми словами&lt;/h2&gt;
+
+&lt;p&gt;Promise - в переводе с английского “обещание” - объект, позволяющий получить доступ к результату операции, которая могла еще не закончиться. Если вы пытаетесь использовать значение promise, а связанная с ним операция еще не завершена, то обработчик будет выполнен после завершения операции.&lt;/p&gt;
+
+&lt;p&gt;Предположим, вы хотите выполнить большой и сложный SQL-запрос, ждать выполнения которого придется не меньше 10-и секунд. В синхронном стиле мы написали бы что-то вроде:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;result = query(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;select * from big_table&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;); &lt;span style=&quot;color:#777&quot;&gt;// занимает 10 секунд&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!--more--&gt;
+
+&lt;p&gt;Данный код очень прост и понятен, но в таком случае ваша программа будет простаивать 10 секунд до получения резуальтата синхронной операции. Иногда это приемлено, но бывают ситуации, когда в это время можно сделать что-то еще, например, обработать запрос другого пользователя.&lt;/p&gt;
+
+&lt;p&gt;Вы можете использовать асинхронный подход и вернуть управление своей программе сразу же после выполнения запроса. Вы можете сделать это при помощи коллбека:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;query(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;select * from big_table&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;, &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;function&lt;/span&gt;(result) {
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;         &lt;span style=&quot;color:#777&quot;&gt;/* этот код будет вызван через 10 секунд */&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;});
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;В данном примере вы передаете в callback-функцию, которая будет вызвана с результатом после окончания обработки вашего запроса. Это довольно просто для понимания и решает нашу проблему - наша программа теперь может продолжить выполнение и не ждать окончания операции. Основное беспокойство в этом подходе вызывает тот факт, что проследить этапы выполнения программы становится сложнее, потому что порядок выполнения операций не так очевиден, как при использовании синхронного стиля. Также довольно сложно будет обеспечить выполнение операций вида “сделай A, B и С, а потом D”.&lt;/p&gt;
+
+&lt;p&gt;Тут на помощь приходят промисы. Вместо использования коллбека query может вернуть нам promise:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;promise = query(...); &lt;span style=&quot;color:#777&quot;&gt;// Возвращает управление сразу же&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;В данном случае управление возвращается в наш код сразу же, а запрос выполняется в фоновом режиме. Основная идея в том, что promise не содержит результат операции на этом этапе. Если вы захотите что-то сделать с результатами операции - ваши действия будут отложены до фактического получения результата выполнения запроса.&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;promise = query(...); &lt;span style=&quot;color:#777&quot;&gt;// Возвращает управление сразу.&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;do_something_with(promise); &lt;span style=&quot;color:#777&quot;&gt;// Выполняется через 10 секунд.&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Вы по прежнему можете сделать что-нибудь еще, пока ожидаете результата выполнения запроса:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;promise = query(...); &lt;span style=&quot;color:#777&quot;&gt;// Возвращает управление сразу.&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;do_something_else(); &lt;span style=&quot;color:#777&quot;&gt;// Выполняется сразу.&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;do_something_with(result_promise); &lt;span style=&quot;color:#777&quot;&gt;// Выполняется через 10 секунд.&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Основная польза от промисов в том, что иногда с их помощью можно сделать код чище, чем при использовании коллбек-функций: вам не нужно писать множество анонимных функций, операции, которым не нужен результат, могут быть выполнены сразу же.&lt;/p&gt;
+
+&lt;p&gt;Промисы могут дать вам основные преимещуства коллбек-фукнций (асинхронное выполнение вашего кода) и при этом позволяют вам писать чистый и простой в поддержке код. Вы получаете код, который выглядит почти так же, как синхронный, но выполняется он асинхронно.&lt;/p&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;Источники&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.quora.com/JavaScript/What-is-the-promise-pattern&quot;&gt;Этот ответ на Quora&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Sun, 17 Nov 2013 21:00:00 +0400</pubDate>
+        <link>http://panferov.me/2013/11/17/promises-part1-beginning.html</link>
+        <guid isPermaLink="true">http://panferov.me/2013/11/17/promises-part1-beginning.html</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>Использование Grape для реализации API в вашем проекте</title>
+        <description>&lt;p&gt;В данной статье речь пойдет о том, как можно эффективно и с минимальными затратами времени и седых волос реализовать JSON или XML API в вашем проекте. Речь пойдет об использовании гема Grape.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;p&gt;Итак, зачем вам может понадобиться отдельная библиотека для релизации API? А она нужна вам в следующих случаях:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Вам необходимо сложное API.&lt;/li&gt;
+  &lt;li&gt;Вы хотите отделить реализацию API от кода вашего основного приложения.&lt;/li&gt;
+  &lt;li&gt;Вам необходима поддержка разных версий API одновременно для обратной совместимости.&lt;/li&gt;
+  &lt;li&gt;Вам необходима валидация параметров запросов в ваших API.&lt;/li&gt;
+  &lt;li&gt;Вы хотите гибко управлять обработкой ошибок.&lt;/li&gt;
+  &lt;li&gt;Вы хотите сделать асинхронное API.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Если одино из утверждений в списке выше — истинно, то вам следует обратить внимание на библиотеку Grape. Если кратко, то Grape — фреймворк для быстрого создания REST-совместимого API. Он разработан для того, чтобы запускаться поверх стека Rack как отдельное приложение или дополнять существующие веб фреймоворки (Rails, Sinatra).&lt;/p&gt;
+
+&lt;p&gt;Grape предоставляет простой DSL для разработки RESTful API со встроенной поддержкой стандартных соглашений, включая несколько форматов, управление префиксами, валидацию контента, версионирование и многое другое.&lt;/p&gt;
+
+&lt;p&gt;Взгляните на пример из официальной документации Grape:&lt;/p&gt;
+
+&lt;div&gt;&lt;div class=&quot;CodeRay&quot;&gt;
+  &lt;div class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n1&quot; name=&quot;n1&quot;&gt;1&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;module&lt;/span&gt; &lt;span style=&quot;color:#B06;font-weight:bold&quot;&gt;Twitter&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n2&quot; name=&quot;n2&quot;&gt;2&lt;/a&gt;&lt;/span&gt;  &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;class&lt;/span&gt; &lt;span style=&quot;color:#B06;font-weight:bold&quot;&gt;API&lt;/span&gt; &amp;lt; &lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;Grape&lt;/span&gt;::&lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;API&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n3&quot; name=&quot;n3&quot;&gt;3&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n4&quot; name=&quot;n4&quot;&gt;4&lt;/a&gt;&lt;/span&gt;    version &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;v1&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;, &lt;span style=&quot;color:#A60&quot;&gt;:using&lt;/span&gt; =&amp;gt; &lt;span style=&quot;color:#A60&quot;&gt;:header&lt;/span&gt;, &lt;span style=&quot;color:#A60&quot;&gt;:vendor&lt;/span&gt; =&amp;gt; &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;twitter&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n5&quot; name=&quot;n5&quot;&gt;5&lt;/a&gt;&lt;/span&gt;    format &lt;span style=&quot;color:#A60&quot;&gt;:json&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n6&quot; name=&quot;n6&quot;&gt;6&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n7&quot; name=&quot;n7&quot;&gt;7&lt;/a&gt;&lt;/span&gt;    helpers &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n8&quot; name=&quot;n8&quot;&gt;8&lt;/a&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;current_user&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt; &lt;a href=&quot;#n9&quot; name=&quot;n9&quot;&gt;9&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#33B&quot;&gt;@current_user&lt;/span&gt; ||= &lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;User&lt;/span&gt;.authorize!(env)
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n10&quot; name=&quot;n10&quot;&gt;10&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n11&quot; name=&quot;n11&quot;&gt;11&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n12&quot; name=&quot;n12&quot;&gt;12&lt;/a&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#06B;font-weight:bold&quot;&gt;authenticate!&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n13&quot; name=&quot;n13&quot;&gt;13&lt;/a&gt;&lt;/span&gt;        error!(&lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;401 Unauthorized&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt;, &lt;span style=&quot;color:#00D&quot;&gt;401&lt;/span&gt;) &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;unless&lt;/span&gt; current_user
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n14&quot; name=&quot;n14&quot;&gt;14&lt;/a&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n15&quot; name=&quot;n15&quot;&gt;15&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n16&quot; name=&quot;n16&quot;&gt;16&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n17&quot; name=&quot;n17&quot;&gt;17&lt;/a&gt;&lt;/span&gt;    resource &lt;span style=&quot;color:#A60&quot;&gt;:statuses&lt;/span&gt; &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n18&quot; name=&quot;n18&quot;&gt;18&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n19&quot; name=&quot;n19&quot;&gt;19&lt;/a&gt;&lt;/span&gt;      desc &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Возвращаем публичный timeline.&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n20&quot; name=&quot;n20&quot;&gt;20&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;      get &lt;span style=&quot;color:#A60&quot;&gt;:public_timeline&lt;/span&gt; &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n21&quot; name=&quot;n21&quot;&gt;21&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;Status&lt;/span&gt;.limit(&lt;span style=&quot;color:#00D&quot;&gt;20&lt;/span&gt;)
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n22&quot; name=&quot;n22&quot;&gt;22&lt;/a&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n23&quot; name=&quot;n23&quot;&gt;23&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n24&quot; name=&quot;n24&quot;&gt;24&lt;/a&gt;&lt;/span&gt;      desc &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Возвращаем персональный timeline.&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n25&quot; name=&quot;n25&quot;&gt;25&lt;/a&gt;&lt;/span&gt;      get &lt;span style=&quot;color:#A60&quot;&gt;:home_timeline&lt;/span&gt; &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n26&quot; name=&quot;n26&quot;&gt;26&lt;/a&gt;&lt;/span&gt;        authenticate!
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n27&quot; name=&quot;n27&quot;&gt;27&lt;/a&gt;&lt;/span&gt;        current_user.statuses.limit(&lt;span style=&quot;color:#00D&quot;&gt;20&lt;/span&gt;)
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n28&quot; name=&quot;n28&quot;&gt;28&lt;/a&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n29&quot; name=&quot;n29&quot;&gt;29&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n30&quot; name=&quot;n30&quot;&gt;30&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;      desc &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Возвращаем статус.&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n31&quot; name=&quot;n31&quot;&gt;31&lt;/a&gt;&lt;/span&gt;      params &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n32&quot; name=&quot;n32&quot;&gt;32&lt;/a&gt;&lt;/span&gt;        requires &lt;span style=&quot;color:#A60&quot;&gt;:id&lt;/span&gt;, &lt;span style=&quot;color:#A60&quot;&gt;:type&lt;/span&gt; =&amp;gt; &lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;Integer&lt;/span&gt;, &lt;span style=&quot;color:#A60&quot;&gt;:desc&lt;/span&gt; =&amp;gt; &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Идентификатор статуса.&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n33&quot; name=&quot;n33&quot;&gt;33&lt;/a&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n34&quot; name=&quot;n34&quot;&gt;34&lt;/a&gt;&lt;/span&gt;      get &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;:id&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n35&quot; name=&quot;n35&quot;&gt;35&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;Status&lt;/span&gt;.find(params[&lt;span style=&quot;color:#A60&quot;&gt;:id&lt;/span&gt;])
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n36&quot; name=&quot;n36&quot;&gt;36&lt;/a&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n37&quot; name=&quot;n37&quot;&gt;37&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n38&quot; name=&quot;n38&quot;&gt;38&lt;/a&gt;&lt;/span&gt;      desc &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Создаем статус.&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n39&quot; name=&quot;n39&quot;&gt;39&lt;/a&gt;&lt;/span&gt;      params &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n40&quot; name=&quot;n40&quot;&gt;40&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;        requires &lt;span style=&quot;color:#A60&quot;&gt;:status&lt;/span&gt;, &lt;span style=&quot;color:#A60&quot;&gt;:type&lt;/span&gt; =&amp;gt; &lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;String&lt;/span&gt;, &lt;span style=&quot;color:#A60&quot;&gt;:desc&lt;/span&gt; =&amp;gt; &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Ваш статус.&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n41&quot; name=&quot;n41&quot;&gt;41&lt;/a&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n42&quot; name=&quot;n42&quot;&gt;42&lt;/a&gt;&lt;/span&gt;      post &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n43&quot; name=&quot;n43&quot;&gt;43&lt;/a&gt;&lt;/span&gt;        authenticate!
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n44&quot; name=&quot;n44&quot;&gt;44&lt;/a&gt;&lt;/span&gt;        &lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;Status&lt;/span&gt;.create!({
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n45&quot; name=&quot;n45&quot;&gt;45&lt;/a&gt;&lt;/span&gt;          &lt;span style=&quot;color:#A60&quot;&gt;:user&lt;/span&gt; =&amp;gt; current_user,
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n46&quot; name=&quot;n46&quot;&gt;46&lt;/a&gt;&lt;/span&gt;          &lt;span style=&quot;color:#A60&quot;&gt;:text&lt;/span&gt; =&amp;gt; params[&lt;span style=&quot;color:#A60&quot;&gt;:status&lt;/span&gt;]
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n47&quot; name=&quot;n47&quot;&gt;47&lt;/a&gt;&lt;/span&gt;        })
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n48&quot; name=&quot;n48&quot;&gt;48&lt;/a&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n49&quot; name=&quot;n49&quot;&gt;49&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n50&quot; name=&quot;n50&quot;&gt;50&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;      desc &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Изменяем статус.&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n51&quot; name=&quot;n51&quot;&gt;51&lt;/a&gt;&lt;/span&gt;      params &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n52&quot; name=&quot;n52&quot;&gt;52&lt;/a&gt;&lt;/span&gt;        requires &lt;span style=&quot;color:#A60&quot;&gt;:id&lt;/span&gt;, &lt;span style=&quot;color:#A60&quot;&gt;:type&lt;/span&gt; =&amp;gt; &lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;String&lt;/span&gt;, &lt;span style=&quot;color:#A60&quot;&gt;:desc&lt;/span&gt; =&amp;gt; &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Идентификатор статуса.&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n53&quot; name=&quot;n53&quot;&gt;53&lt;/a&gt;&lt;/span&gt;        requires &lt;span style=&quot;color:#A60&quot;&gt;:status&lt;/span&gt;, &lt;span style=&quot;color:#A60&quot;&gt;:type&lt;/span&gt; =&amp;gt; &lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;String&lt;/span&gt;, &lt;span style=&quot;color:#A60&quot;&gt;:desc&lt;/span&gt; =&amp;gt; &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Ваш статус.&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n54&quot; name=&quot;n54&quot;&gt;54&lt;/a&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n55&quot; name=&quot;n55&quot;&gt;55&lt;/a&gt;&lt;/span&gt;      put &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;:id&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n56&quot; name=&quot;n56&quot;&gt;56&lt;/a&gt;&lt;/span&gt;        authenticate!
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n57&quot; name=&quot;n57&quot;&gt;57&lt;/a&gt;&lt;/span&gt;        current_user.statuses.find(params[&lt;span style=&quot;color:#A60&quot;&gt;:id&lt;/span&gt;]).update({
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n58&quot; name=&quot;n58&quot;&gt;58&lt;/a&gt;&lt;/span&gt;          &lt;span style=&quot;color:#A60&quot;&gt;:user&lt;/span&gt; =&amp;gt; current_user,
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n59&quot; name=&quot;n59&quot;&gt;59&lt;/a&gt;&lt;/span&gt;          &lt;span style=&quot;color:#A60&quot;&gt;:text&lt;/span&gt; =&amp;gt; params[&lt;span style=&quot;color:#A60&quot;&gt;:status&lt;/span&gt;]
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n60&quot; name=&quot;n60&quot;&gt;60&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;        })
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n61&quot; name=&quot;n61&quot;&gt;61&lt;/a&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n62&quot; name=&quot;n62&quot;&gt;62&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n63&quot; name=&quot;n63&quot;&gt;63&lt;/a&gt;&lt;/span&gt;      desc &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Удаляем статус.&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n64&quot; name=&quot;n64&quot;&gt;64&lt;/a&gt;&lt;/span&gt;      params &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n65&quot; name=&quot;n65&quot;&gt;65&lt;/a&gt;&lt;/span&gt;        requires &lt;span style=&quot;color:#A60&quot;&gt;:id&lt;/span&gt;, &lt;span style=&quot;color:#A60&quot;&gt;:type&lt;/span&gt; =&amp;gt; &lt;span style=&quot;color:#036;font-weight:bold&quot;&gt;String&lt;/span&gt;, &lt;span style=&quot;color:#A60&quot;&gt;:desc&lt;/span&gt; =&amp;gt; &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;Идентификатор статуса.&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n66&quot; name=&quot;n66&quot;&gt;66&lt;/a&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n67&quot; name=&quot;n67&quot;&gt;67&lt;/a&gt;&lt;/span&gt;      delete &lt;span style=&quot;background-color:hsla(0,100%,50%,0.05)&quot;&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;span style=&quot;color:#D20&quot;&gt;:id&lt;/span&gt;&lt;span style=&quot;color:#710&quot;&gt;&#39;&lt;/span&gt;&lt;/span&gt; &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n68&quot; name=&quot;n68&quot;&gt;68&lt;/a&gt;&lt;/span&gt;        authenticate!
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n69&quot; name=&quot;n69&quot;&gt;69&lt;/a&gt;&lt;/span&gt;        current_user.statuses.find(params[&lt;span style=&quot;color:#A60&quot;&gt;:id&lt;/span&gt;]).destroy
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;strong&gt;&lt;a href=&quot;#n70&quot; name=&quot;n70&quot;&gt;70&lt;/a&gt;&lt;/strong&gt;&lt;/span&gt;      &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n71&quot; name=&quot;n71&quot;&gt;71&lt;/a&gt;&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n72&quot; name=&quot;n72&quot;&gt;72&lt;/a&gt;&lt;/span&gt;    &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n73&quot; name=&quot;n73&quot;&gt;73&lt;/a&gt;&lt;/span&gt;  &lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;line-numbers&quot;&gt;&lt;a href=&quot;#n74&quot; name=&quot;n74&quot;&gt;74&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:#080;font-weight:bold&quot;&gt;end&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Приложение будет отвечать по следующим марштурам:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;GET /statuses/public_timeline(.json)
+GET /statuses/home_timeline(.json)
+GET /statuses/:id(.json)
+POST /statuses(.json)
+PUT /statuses/:id(.json)
+DELETE /statuses/:id(.json)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Удобно, не правда ли? При помощи данного фреймворка вы получаете все необходимое для создания качественного API для вашего приложения.&lt;/p&gt;
+
+&lt;p&gt;Для дальнейшего ознакомления предлагаю вам дополнительные материалы:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;a href=&quot;https://github.com/intridea/grape&quot;&gt;Официальная документация по Grape (англ.)&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;a href=&quot;http://wtfdoc.ru/projects/grape&quot;&gt;Перевод официальной документации на сайте wtfdoc.ru&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+</description>
+        <pubDate>Thu, 04 Apr 2013 12:00:00 +0400</pubDate>
+        <link>http://panferov.me/2013/04/04/using-grape.html</link>
+        <guid isPermaLink="true">http://panferov.me/2013/04/04/using-grape.html</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>Собеседование на разработчика Ruby. Часть 2</title>
+        <description>&lt;p&gt;Данная статья является продолжением &lt;a href=&quot;/blog/2013/interview-ruby&quot;&gt;Части 1&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Итак, вы подготовились и нашли ответы на вопросы из первой части статьи и это значит, что вы в достаточной мере владеете теоритическими знаниями. Теперь пришла пора позаниматься практическими вопросами, который вы можете услышать на собеседовании.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;p&gt;Данные вопросы предполагают наличие у вас некоторого опыта разработки в среде Ruby и Ruby On Rails.&lt;/p&gt;
+
+&lt;h2 id=&quot;rails&quot;&gt;Вопросы по Rails&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Из каких больших составных частей состоит фреймворк Rails?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;В ответ ожидается перечень компонент фреймворка:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;actionmailer&lt;/li&gt;
+  &lt;li&gt;actionpack&lt;/li&gt;
+  &lt;li&gt;activemodel&lt;/li&gt;
+  &lt;li&gt;activerecord&lt;/li&gt;
+  &lt;li&gt;activesupport&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Крайне желательно знать, зачем нужен тот или иной компонент и какую часть работы он на себя берет. В обязательном порядке стоит разобраться с ActiveRecord и ActiveSupport.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Как сгенерировать модель в Rails? Какие еще примеры работы с генераторами вы можете привести?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Имеется в виду, конечно же, работа с &lt;code&gt;rails g&lt;/code&gt;. Генерировать можно модели, контроллеры, скаффолды, миграции и [кучу других вещей][http://guides.rubyonrails.org/command_line.html#rails-generate].&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Как создать модель без помощи &lt;code&gt;rails g&lt;/code&gt;? Какие шаги необходимо для этого проделать?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Тут вам пригодится знание фреймворка ActiveRecord и принципов работы генераторов Rails. Как известно, все модели в вашем приложении лежат в папке app/models.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;В папке app/models необходимо создать файл с названием, соответствующим вашей модели. Например, users.rb.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;В файле users.rb необходимо создать класс и унаследовать его от базового класса всех моделей в ActiveRecord:&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;code&gt;ruby
+class User &amp;lt; ActiveRecord::Base
+  # немного магии
+end
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Создать миграцию, которая выполнит необходимые изменения в схеме вашей базы данных.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Какам образом осуществляется перевод rails-приложения на другие языки?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Стоит почитать официальные &lt;a href=&quot;http://guides.rubyonrails.org/i18n.html&quot;&gt;гайды rails&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Объясните паттерн MVC.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Можем ли мы использовать паттерн MVC, если решим отказаться от хранения данных в реляционной базе в пользу XML-файлов?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Какие аналоги ActiveRecord существуют в мире Ruby?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;В ответ ожидается рассказ хотя бы про &lt;a href=&quot;http://datamapper.org/&quot;&gt;DataMapper&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Знаете ли вы, что такое &lt;a href=&quot;https://github.com/rails/arel&quot;&gt;Arel&lt;/a&gt;?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Какими сторонними гемами в пользовались в ваших приложениях?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;**Q: Что такое Rack? Что такое rack middleware? Какие rack middleware входят в состав Rails и включены по-умолчанию? **&lt;/p&gt;
+
+&lt;p&gt;Литобзор стоит начать с этой статьи на хабре: &lt;a href=&quot;http://habrahabr.ru/post/131429/&quot;&gt;http://habrahabr.ru/post/131429/&lt;/a&gt;, а затем вновь обратиться в &lt;a href=&quot;http://guides.rubyonrails.org/rails_on_rack.html&quot;&gt;официальным гайдам&lt;/a&gt;.&lt;/p&gt;
+</description>
+        <pubDate>Tue, 02 Apr 2013 12:00:00 +0400</pubDate>
+        <link>http://panferov.me/2013/04/02/interview-ruby-2.html</link>
+        <guid isPermaLink="true">http://panferov.me/2013/04/02/interview-ruby-2.html</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>Собеседование на разработчика Ruby. Часть 1</title>
+        <description>&lt;p&gt;Итак, вы решили устраиваться на работу рубистом. Какие вопросы вам могут задать на собеседовании и как на них правильно отвечать? Где искать ответы на каверзные вопросы? О чем спрашивают джуниоров, сеньеров и миддлов?&lt;/p&gt;
+
+&lt;p&gt;Данная статья не даст вам ответы на все вопросы, но я постараюсь описать те вопросы, которые задавали мне и которые обычно задавал я на основе личного опыта. Я намеренно не буду ассоциировать вопросы и конкретные компании.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;p&gt;В разных компаниях собеседование проводят по-разному и уж точно нет никакого стандартного плана. Поэтому я не буду сосредотачиваться на каких-то этапах, а просто буду приводить вопросы и ответы на некоторые их них. Пожалуйста, не воспринимайте мои ответы как истину в последней инстанции, ведь я даю ответы на основе своего собственного опыта.&lt;/p&gt;
+
+&lt;h2 id=&quot;computer-science&quot;&gt;Базовые алгоритмы и Computer Science&lt;/h2&gt;
+
+&lt;p&gt;Итак, первая категория вопросов относится к базовым вещам в компьютерной науке. Такими вопросами любят мучить джуниуров, приходящих на собеседование по любому языку программирования, не обязательно Ruby. Дело в том, что у представителей данного класса программистов еще недостаточно жизненного опыта в конкретной технологии, а знание основы показывает, могут ли они мыслить как программисты.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Расскажите, какие вы знаете базовые типы данных?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Расскажите, что такое Стек. Какие примеры реализации стека вы можете привести?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Что такое LIFO, FIFO?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Как вы будете сортировать массив из N чисел.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Что такое вычислительная сложность алгоритма. Какую вычислительную сложность имеет алгоритм бинарного поиска в отсортированном массиве?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Что такое двоичное дерево?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Как в современных языках программирования реализованы ассоциативные массивы?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: &lt;span class=&quot;label&quot;&gt;Задача&lt;/span&gt; Напишите алгоритм сортировки массива методом QuickSort&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: &lt;span class=&quot;label&quot;&gt;Задача&lt;/span&gt; Представте, что вы разрабатываете электронное казино. Вам выдали 56 карт. Напишите алгоритим перемешивания карт.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: &lt;span class=&quot;label&quot;&gt;Задача&lt;/span&gt; Запрограммируйте перевод числа из 10-й в двоичную систему исчисления&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Ответы на эти и другие подобные вопросы покажет, знаете ли вы основы, на которых строится вся современная компьютерная индустрия. Для того, чтобы быстро подготовиться к таким вопросам, я рекомендую курс &lt;a href=&quot;https://class.coursera.org/algs4partI-002/class/index&quot;&gt;Algorithms, Part I&lt;/a&gt;. Если же вы хотите получить более фундаментальные и серьезные знания, то стоит почитать &lt;a href=&quot;http://www.ozon.ru/?context=search&amp;amp;text=%ca%ed%f3%f2+%c8%f1%ea%f3%f1%f1%f2%e2%ee&amp;amp;bests=1&quot;&gt;“Искусство программирования” Дональда Кнута&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;Парадигмы программирования&lt;/h2&gt;
+
+&lt;p&gt;Итак, вы успешно подготовились к вопросам категории “Базовые алгоритмы” (или может вы олимпиадник со стажем). Далее вам стоит стряхнуть пыль с тех полок вашего мозга, на которых хранятся ответы на следующие вопросы:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Какие основные фундаментальные парадигмы программирования существуют?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;В ответ ожидается перечисление:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Логическое&lt;/li&gt;
+  &lt;li&gt;Императивное&lt;/li&gt;
+  &lt;li&gt;Функциональное&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Если вы вдруг в тот же ряд поставите ООП, то это несколько снизит ценность вашего ответа, так как ООП — понятие, лежащее в другой плоскости. Хуже всего, если вы с него начнете и им же закончите.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Опишите базовые концепции императивного программирования?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;A:&lt;/em&gt; Императивное программирование предполагает оперирование набором иструкций, которые может выполнить программа и состоянием, которое изменяется при помощи этих инструкций.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Можно ли на Ruby программировать в фукнциональном стиле? Какие особенности языка позволяют нам это делать?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;A:&lt;/em&gt; Функциональное программирование завязано вокруг функций, поэтому функция должна быть объектом первого рода (first-class object). В любом месте функцию можно создать (анонимная функция), можно присвоить переменной, можно передать в функцию в качестве аргументов, можно вернуть из функции в качестве результата. Все это можно делать в Ruby при помощи таких объектов как Proc. Также в Ruby поддерживаются замыкания.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Расскажите, что такое ООП? Соблюдение каких трех ключевых принципов предполагает ООП?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Что такое класс?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Чем в Ruby класс отличается от модуля?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Поддерживает ли Ruby наследование классов? А множественное наследование?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Что такое абстрактный класс? Существует ли в Ruby понятие абстрактного класса?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: Чем абстрактный класс отличается от интерфейса? Существует ли в Ruby понятие интерфейса?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: &lt;span class=&quot;label&quot;&gt;Задача&lt;/span&gt; Напишите на Ruby вычисление факториала в функциональном стиле&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: &lt;span class=&quot;label&quot;&gt;Задача&lt;/span&gt; Напишите на Ruby вычисление факториала в императивном стиле&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Q: &lt;span class=&quot;label&quot;&gt;Задача&lt;/span&gt; Опишите плюсы и минусы двух реализаций&lt;/strong&gt;&lt;/p&gt;
+</description>
+        <pubDate>Thu, 28 Mar 2013 12:00:00 +0400</pubDate>
+        <link>http://panferov.me/2013/03/28/interview-ruby.html</link>
+        <guid isPermaLink="true">http://panferov.me/2013/03/28/interview-ruby.html</guid>
+        
+        
+      </item>
+    
+  </channel>
+</rss>

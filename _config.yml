@@ -1,0 +1,12 @@
+# Site settings
+title: Stanislav Panferov
+description: > # this means to ignore newlines until "baseurl:"
+  Personal web blog about software development and code design.
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "http://panferov.me" # the base hostname & protocol for your site
+github_username:  s-panferov
+
+# Build settings
+markdown: redcarpet2
+redcarpet:
+  extensions: ["fenced_code_blocks"]

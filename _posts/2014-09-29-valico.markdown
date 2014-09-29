@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Valico - validation and coercion tool for JSON objects, written in Rust and inspired by Grape"
+title:  "Valico - validation and coercion tool for JSON objects, written in Rust"
 date:   2014-09-29 12:00
 languages: Rust
 categories:

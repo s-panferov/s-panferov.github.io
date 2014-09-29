@@ -10,8 +10,3 @@ github_username:  s-panferov
 markdown: redcarpet
 redcarpet:
   extensions: ["fenced_code_blocks"]
-
-analytics :
-  provider : google
-  google : 
-      tracking_id : 'UA-39366799-1'

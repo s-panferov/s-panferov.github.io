@@ -53,7 +53,7 @@ Check [Valico] on GitHub.
 See also:
 
 * [Rustless] - REST-like API micro-framework for Rust that use Valico.
-* [rust-query] - Rust query string parser with nesting support can be used together with Valico to provide simple and safe toolchain for parsing query strings.
+* [queryst] - Rust query string parser with nesting support can be used together with Valico to provide simple and safe toolchain for parsing query strings.
 
 [Rustless]: https://github.com/rustless/rustless
 [queryst]: https://github.com/rustless/queryst

@@ -10,12 +10,18 @@
     position: relative;
 }
 
+.profile-img {
+    height: 44px;
+    width: 44px;
+    margin-bottom: 7px;
+    margin-right: 5px;
+}
+
 .site-title {
     font-size: 26px;
     line-height: 56px;
     letter-spacing: -1px;
     margin-bottom: 0;
-    float: left;
 
     &,
     &:visited {

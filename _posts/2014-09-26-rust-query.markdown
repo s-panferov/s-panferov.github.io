@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Rust query string parser with nesting support"
+title:  "Queryst - Rust query string parser with nesting support"
 date:   2014-09-26 12:00
 languages: Rust
 categories:

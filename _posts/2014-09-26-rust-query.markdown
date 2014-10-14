@@ -17,7 +17,7 @@ let object = parse("foo[0][a]=a&foo[0][b]=b&foo[1][a]=aa&foo[1][b]=bb");
 
 You can work with raw Json value or decode it to Rust strucure by using serialize::json::decode function (see examples in [json]).
 
-See more examples in the README on GitHub: [rust-query].
+See more examples in the README on GitHub: [queryst].
 
 [json]: http://doc.rust-lang.org/serialize/json/index.html
 [queryst]: https://github.com/rustless/queryst

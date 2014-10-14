@@ -6,7 +6,7 @@ languages: Rust
 categories:
 ---
 
-Just ended writing **[rust-query]** library.  Use **rust-query** library to parse query-string to corresponding [json] values.
+Just ended writing **[queryst]** library.  Use **queryst** library to parse query-string to corresponding [json] values.
 
 ~~~rust
 use query::parse;
@@ -20,4 +20,4 @@ You can work with raw Json value or decode it to Rust strucure by using serializ
 See more examples in the README on GitHub: [rust-query].
 
 [json]: http://doc.rust-lang.org/serialize/json/index.html
-[rust-query]: https://github.com/s-panferov/rust-query
+[queryst]: https://github.com/rustless/queryst

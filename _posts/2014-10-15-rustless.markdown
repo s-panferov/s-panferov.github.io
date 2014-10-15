@@ -1,0 +1,53 @@
+---
+layout: post
+title:  "Use Rust for web with Rustless. New REST-like API micro-framework."
+date:   2014-10-15 12:00
+languages: Rust
+categories:
+---
+
+[Rustless](http://rustless.org) is a REST-like API micro-framework for Rust. It's designed to provide a simple DSL to easily develop RESTful APIs. It has built-in support for common conventions, including multiple formats, subdomain/prefix restriction, content negotiation, versioning and much more.
+
+Rustless in a port of [Grape](https://github.com/intridea/grape) library from Ruby world. Based on [hyper](https://github.com/hyperium/hyper) - an HTTP library for Rust.
+
+Like Rust itself, Rustless is still in the early stages of development, so don't be surprised if APIs change and things break. If something's not working properly, file an issue or submit a pull request in [GitHub repo](https://github.com/rustless/rustless).
+
+Example:
+
+~~~rust
+Api::build(|api| {
+    api.prefix("api");
+
+    format_error!(api, UnauthorizedError, |_err, _media| {
+        Some(Response::from_string(status::Unauthorized, "Please provide correct `token` parameter".to_string()))
+    });
+
+    api.namespace("admin", |admin_ns| {
+
+        admin_ns.params(|params| {
+            params.req_typed("token", Valico::string())
+        });
+
+        // Using after_validation callback to check token
+        admin_ns.after_validation(callback!(|_client, params| {
+
+            match params.find(&"token".to_string()) {
+                // We can unwrap() safely because token in validated already
+                Some(token) => if token.as_string().unwrap().as_slice() == "password1" { return Ok(()) },
+                None => ()
+            }
+
+            // Fire error from callback is token is wrong
+            return Err(UnauthorizedError.erase())
+
+        }));
+
+        // This `/api/admin/server_status` endpoint is secure now
+        admin_ns.get("server_status", |endpoint| {
+            edp_handler!(endpoint, |client, _params| {
+                client.text("Everything is OK".to_string())  
+            })
+        });
+    })
+})
+~~~

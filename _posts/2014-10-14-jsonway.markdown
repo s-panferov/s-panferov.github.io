@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "JsonWay - JSON builder for Rust"
+title:  "JsonWay - JSON building DSL and configurable serializers for Rust "
 date:   2014-10-14 12:00
 languages: Rust
 categories:
@@ -10,9 +10,9 @@ categories:
 
 It is inspired by [jbuilder](https://github.com/rails/jbuilder) and has similar functional.
 
-Example: 
+## Building JSON
 
-~~~rust
+```rust
 ObjectBuilder::build(|json| {
     json.set("first_name", "Luke".to_string()); 
     json.set("last_name", "Skywalker".to_string());
@@ -30,7 +30,29 @@ ObjectBuilder::build(|json| {
         json.push("Darth Sidious (Briefly)".to_string());
     });
 });
-~~~
+```
+
+## Serializing objects
+
+```rust
+use jsonway::{ObjectBuilder, ObjectSerializer};
+
+struct Jedi {
+    name: String
+}
+
+struct JediSerializer;
+
+impl ObjectSerializer<Jedi> for JediSerializer {
+    fn root(&self) -> Option<&str> { Some("jedi") }
+    fn build(&self, jedi: &Jedi, json: &mut ObjectBuilder) {
+        json.set("name", jedi.name.to_string());
+    }
+}
+
+let jedi = Jedi { name: "Saes Rrogon".to_string() };
+let json = JediSerializer.serialize(&jedi);
+```
 
 Check [JsonWay] on GitHub.
 

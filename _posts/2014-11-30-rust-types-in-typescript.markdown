@@ -2,7 +2,7 @@
 layout: post
 title:  "Use Option and Result type from Rust in TypeScript"
 date:   2014-11-30 12:00
-languages: Rust
+languages: TypeScript
 categories:
 ---
 

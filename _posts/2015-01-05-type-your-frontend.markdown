@@ -108,7 +108,7 @@ grunt.registerTask('ts:dev', 'Build application', function () {
 
 ## Система сборки
 
-В моем текущем проекте я не использую сторонние системы сборки, такие как [require-js](http://requirejs.org/) или [browserify](http://browserify.org/). ~~В свое время я намучился с ними~~. Вместо этого я использую внутренний сборщик TypeScript и склеиваю библиотеки при помощи [grunt-contrib-concat](https://github.com/gruntjs/grunt-contrib-concat).  Я очень жду наивную поддержку es6-modules в TypeScript, после чего с радостью перейду на нее.
+В моем текущем проекте я не использую сторонние системы сборки, такие как [require-js](http://requirejs.org/) или [browserify](http://browserify.org/). ~~В свое время я намучился с ними~~. Вместо этого я использую внутренний сборщик TypeScript и склеиваю библиотеки при помощи [grunt-contrib-concat](https://github.com/gruntjs/grunt-contrib-concat).  Я очень жду нативную поддержку es6-modules в TypeScript, после чего с радостью перейду на нее.
 
 Тем не менее, вы можете воспользоваться любимой системой сборки в вашем проекте, TypeScript совместим как с AMD, так и с CommonJS модулями. Почитать об этом можно в [документации](http://www.typescriptlang.org/Handbook#modules) к TypeScript.
 
